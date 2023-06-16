@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create AWS Config Rule using CloudFormation Guard DSL
+Parameters:
+  ConfigRuleName01:
+    Type: String
+    Default: GUARD-Rule-01
+    Description: Name of the AWS Config Rule
+
+Resources:
+
+  ConfigGuardRule01:
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: !Ref ConfigRuleName01
+      Description: Compliant if volume is available, type gp3, and encrypted conditions are met in resource
+      Scope:
+        ComplianceResourceTypes: 
+          - "AWS::EC2::Volume"
+      Source:
+        Owner: CUSTOM_POLICY
+        CustomPolicyDetails:
+          EnableDebugLogDelivery: "True"
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            let volumestatus = 'available'
+            let volumetype = 'gp3'
+            let volumeencryptionstatus = true
+
+                rule compliancecheck when 
+                    resourceType == "AWS::EC2::Volume" {
+                        configuration.state == %volumestatus
+                        configuration.encrypted == %volumeencryptionstatus
+                        configuration.volumeType == %volumetype
+                    }
+        SourceDetails: 
+        - 
+          EventSource: "aws.config"
+          MessageType: "ConfigurationItemChangeNotification"
+
+
