@@ -1,0 +1,34 @@
+resource "aws_config_config_rule" "example" {
+    name        = "GUARD-Ec2Volume-TF"
+    description = "compliant if volume is available, encrypted and GP3"
+
+    scope {
+      compliance_resource_types = ["AWS::EC2::Volume"]
+    }
+  
+  
+    source {
+      owner = "CUSTOM_POLICY"
+        
+      source_detail {
+        event_source = "aws.config"
+        message_type = "ConfigurationItemChangeNotification"
+      }
+  
+      custom_policy_details {
+        policy_runtime = "guard-2.x.x"
+        policy_text    = <<EOF
+        let volumestatus = 'available'
+        let volumetype = 'gp3'
+        let volumeencryptionstatus = true
+
+        rule compliancecheck when 
+            resourceType == "AWS::EC2::Volume" {
+                configuration.state == %volumestatus
+                configuration.encrypted == %volumeencryptionstatus
+                configuration.volumeType == %volumetype
+        }
+  EOF                    
+      }
+    }
+  }

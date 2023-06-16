@@ -1,0 +1,117 @@
+terraform {
+    required_providers {
+      aws = {
+        source  = "hashicorp/aws"
+        version = "~> 4.16"
+      }
+    }
+  
+    required_version = ">= 1.2.0"
+  }
+  
+  provider "aws" {
+    region  = "us-west-2"
+  }
+
+resource "aws_config_config_rule" "example" {
+    name        = "GUARD-Ec2Volume-TF"
+    #description = "compliant if volume is available, encrypted and GP3"
+
+    #scope {
+    #  compliance_resource_types = "AWS::EC2::Volume"
+    #}
+  
+    source {
+      owner = "CUSTOM_POLICY"
+        
+      source_detail {
+        event_source = "aws.config"
+        message_type = "ConfigurationItemChangeNotification"
+      }
+  
+      custom_policy_details {
+        policy_runtime = "guard-2.x.x"
+        policy_text    = <<EOF
+        let volumestatus = 'available'
+        let volumetype = 'gp3'
+        let volumeencryptionstatus = true
+
+        rule compliancecheck when 
+            resourceType == "AWS::EC2::Volume" {
+                configuration.state == %volumestatus
+                configuration.encrypted == %volumeencryptionstatus
+                configuration.volumeType == %volumetype
+        }
+  EOF                    
+      }
+    }
+  }
+
+  resource "aws_config_config_rule" "example2" {
+    name        = "GUARD-DynamoPtir-TF"
+    #description = "compliant if volume is available, encrypted and GP3"
+
+    #scope {
+    #  compliance_resource_types = "AWS::EC2::Volume"
+    #}
+  
+    source {
+      owner = "CUSTOM_POLICY"
+        
+      source_detail {
+        event_source = "aws.config"
+        message_type = "ConfigurationItemChangeNotification"
+      }
+  
+      custom_policy_details {
+        policy_runtime = "guard-2.x.x"
+        policy_text    = <<EOF
+        rule tableisactive when
+            resourceType == "AWS::DynamoDB::Table" {
+                configuration.tableStatus == ['ACTIVE']
+    }
+
+        rule checkcompliance when
+            resourceType == "AWS::DynamoDB::Table"
+            tableisactive {
+                supplementaryConfiguration.ContinuousBackupsDescription.pointInTimeRecoveryDescription.pointInTimeRecoveryStatus == "ENABLED"
+    }
+  EOF                    
+      }
+    }
+  }
+
+  resource "aws_config_config_rule" "example3" {
+    name        = "GUARD-GuardDuty-TF"
+    #description = "compliant if volume is available, encrypted and GP3"
+
+    #scope {
+    #  compliance_resource_types = "AWS::EC2::Volume"
+    #}
+  
+    source {
+      owner = "CUSTOM_POLICY"
+        
+      source_detail {
+        event_source = "aws.config"
+        message_type = "ConfigurationItemChangeNotification"
+      }
+  
+      custom_policy_details {
+        policy_runtime = "guard-2.x.x"
+        policy_text    = <<EOF
+        let s3protection = true
+        let kubernetesprotection = true
+        let publishfrequency = 'FIFTEEN_MINUTES'
+        
+            rule compliancecheck when 
+                resourceType == "AWS::GuardDuty::Detector" {
+                    configuration.DataSources.S3Logs.Enable == %s3protection
+                    configuration.DataSources.Kubernetes.AuditLogs.Enable == %kubernetesprotection
+                    configuration.FindingPublishingFrequency == %publishfrequency
+                }
+  EOF                    
+      }
+    }
+  }
+
