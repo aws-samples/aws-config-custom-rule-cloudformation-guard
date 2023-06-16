@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create AWS Config Rule using CloudFormation Guard DSL
+Parameters:
+  ConfigRuleName01:
+    Type: String
+    Default: GUARD-Rule-01-GD
+    Description: Name of the AWS Config Rule
+
+Resources:
+
+  ConfigGuardRule01:
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: !Ref ConfigRuleName01
+      Description: Compliant if GuardDuty has S3 protection enabled, Kubernetes protection enabled AND Findings are published every 15 minutes.
+      Scope:
+        ComplianceResourceTypes: 
+          - "AWS::GuardDuty::Detector"
+      Source:
+        Owner: CUSTOM_POLICY
+        CustomPolicyDetails:
+          EnableDebugLogDelivery: "True"
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            let s3protection = true
+            let kubernetesprotection = true
+            let publishfrequency = 'FIFTEEN_MINUTES'
+
+                rule compliancecheck when 
+                    resourceType == "AWS::GuardDuty::Detector" {
+                        configuration.DataSources.S3Logs.Enable == %s3protection
+                        configuration.DataSources.Kubernetes.AuditLogs.Enable == %kubernetesprotection
+                        configuration.FindingPublishingFrequency == %publishfrequency
+                    }
+        SourceDetails: 
+        - 
+          EventSource: "aws.config"
+          MessageType: "ConfigurationItemChangeNotification"
+
+
+
