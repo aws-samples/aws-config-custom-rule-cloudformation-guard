@@ -29,4 +29,4 @@ The AWS Config Configuration Item JSON, which key-value attributes, will be used
 
 Example: EC2 Volume AWS Config - Configuration Item
 
-![Ec2Config](images/ExampleEc2VolumeAWSConfigConfigurationItem)
+![Ec2Config](images/ExampleEc2VolumeAWSConfigConfigurationItem.png)
