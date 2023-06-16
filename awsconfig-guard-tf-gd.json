@@ -1,0 +1,32 @@
+  resource "aws_config_config_rule" "example2" {
+    name        = "GUARD-GuardDuty-TF"
+    description = "compliant if S3 protection enabled, Kubernetes protention enabled and publish frequency"
+
+    scope {
+      compliance_resource_types = ["AWS::GuardDuty::Detector"]
+    }
+    source {
+      owner = "CUSTOM_POLICY"
+        
+      source_detail {
+        event_source = "aws.config"
+        message_type = "ConfigurationItemChangeNotification"
+      }
+  
+      custom_policy_details {
+        policy_runtime = "guard-2.x.x"
+        policy_text    = <<EOF
+        let s3protection = true
+        let kubernetesprotection = true
+        let publishfrequency = 'FIFTEEN_MINUTES'
+        
+            rule compliancecheck when 
+                resourceType == "AWS::GuardDuty::Detector" {
+                    configuration.DataSources.S3Logs.Enable == %s3protection
+                    configuration.DataSources.Kubernetes.AuditLogs.Enable == %kubernetesprotection
+                    configuration.FindingPublishingFrequency == %publishfrequency
+                }
+  EOF                    
+      }
+    }
+  }
