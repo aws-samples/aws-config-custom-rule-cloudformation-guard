@@ -10,7 +10,7 @@ This guide aims to accelerate the adoption of the feature by providing workable 
 
 ## Limitations
 
-CloudFormation Guard Custom rules are only able to query key/value pairs in a given AWS Config Confirguration Item JSON record.
+CloudFormation Guard Custom rules are only able to query key/value pairs in a given AWS Config Configuration Item JSON record.
 
 
 ## Document Outcomes
