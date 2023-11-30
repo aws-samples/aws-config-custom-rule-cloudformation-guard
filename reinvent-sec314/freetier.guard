@@ -1,0 +1,16 @@
+let rdsinstancelass = ['db.t2.micro','db.t3.micro','db.t4g.micro']
+let ec2instancetype = ['t2.micro','t3.micro','t4g.small']
+
+rule rdsfreetier when 
+        resourceType == "AWS::RDS::DBInstance" {
+            configuration.dBInstanceClass in %rdsinstancelass
+            configuration.engine in ['mysql','mariadb','postgresql'] 
+}
+        
+rule ec2freetier when resourceType == "AWS::EC2::Instance" 
+{
+            configuration.instanceType in %ec2instancetype
+            awsRegion == /us-\S+\-\d/
+            some tags.Environment == 'sandbox' OR 
+            some tags.Environment == 'freetier' <<Not complying with freetier guidance>>
+}

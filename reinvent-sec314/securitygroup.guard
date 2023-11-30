@@ -1,0 +1,6 @@
+rule ec2LeastPrivilegeSecurityGroups when resourceType == 'AWS::EC2::SecurityGroup' {
+      configuration.ipPermissions[
+        some ipv4Ranges[*].cidrIp == "0.0.0.0/0" or
+        some ipv6Ranges[*].cidrIpv6 == "::/0"
+   ] empty << IP Range overly permissive >>
+}

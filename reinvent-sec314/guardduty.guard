@@ -1,0 +1,11 @@
+rule guarddutyfeatures when 
+resourceType == "AWS::GuardDuty::Detector" {
+
+    let gdconfig = configuration.Features[
+        Name == /.*S3_DATA_EVENTS.*|.*EBS_MALWARE_PROTECTION.*/
+    ]
+
+    when %gdconfig !empty{
+        %gdconfig.Status == 'ENABLED'
+    }
+}
