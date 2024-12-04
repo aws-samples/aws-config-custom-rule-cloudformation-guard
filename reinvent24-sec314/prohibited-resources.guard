@@ -1,0 +1,15 @@
+
+# file/global level variable defined added queries for all prohobited resources in [ / / ].
+
+let prohibited_resources_exist = Resources.*[
+   Type in [ /EC2::VPCPeeringConnection/, /EC2::TransitGatewayAttachment/, /AWS::EC2::TransitGateway/]
+   ]
+
+# Named ruleblock
+# if prohoibited resource TYPE matches variable in the CFN template it will 
+# fail this named rule block statement and display message
+
+rule check_all_prohibited_resources_networking {
+    %prohibited_resources_exist empty
+
+}

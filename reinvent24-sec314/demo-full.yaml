@@ -1,0 +1,47 @@
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: cfguard-example-83urj
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: <KEY ARN>
+      LoggingConfiguration:
+        DestinationBucketName: cfguard-reinvent-logging-bucket-<SAMPLE>
+        LogFilePrefix: "production-logs-"
+      Tags:
+          # - {Key: Name, Value: 'reinvent2024-sec314'}
+          - {Key: Environment, Value: 3rd Party Production}
+          # - {Key: Environment, Value: 3rd Party - Production}
+
+  Tgw-Fail:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+
+  VpcPeerConnection-Fail:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+
+  TgwAttachment-Fail:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowGetObject
+            Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: "arn:aws:s3:::cfguard-example-83urj/*"
+            Condition:
+              ForAnyValue:StringEquals:
+                aws:PrincipalOrgPaths:
+                  - <OU PATH>
+                 

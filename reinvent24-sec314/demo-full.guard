@@ -1,0 +1,96 @@
+################################################################################
+####################### S C E N A R I O ########################################
+################################################################################
+
+# New sandbox OU requires security controls outside standard pipeline security
+
+# 1 Encryption using dedicated KMS key shared for the OU
+
+# 2 Tagging Strategy
+
+# 3 Bucketpolicy Statement allowing only the OU 
+
+# 4 Prohibited resources per corporate standard for sandbox OU not creating unauthorized connections (TGW, VPC Peering, TGW attachment)
+
+
+################################################################################
+############################# P O L I C Y  #####################################
+################################################################################
+
+# intro simple variables
+
+let s3_buckets = Resources.*[ Type == 'AWS::S3::Bucket' ]
+let allowed_algos = ["aws:kms"]
+let allowed_s3_key = ["<KEY ARN>"]
+let S3_BUCKET_CONDITION_EXISTS = Resources.*[ Type == 'AWS::S3::BucketPolicy'
+  Metadata.cfn_nag.rules_to_suppress not exists or
+  Metadata.cfn_nag.rules_to_suppress.*.id != "F15"
+  Metadata.guard.SuppressedRules not exists or
+  Metadata.guard.SuppressedRules.* != "S3_BUCKET_CONDITION_EXISTS"
+]
+
+# variable query - queries for all prohobited resources and looks for them to exist, if exists, fail.
+
+let prohibited_resources_exist = Resources.*[
+   Type in [ /EC2::VPCPeeringConnection/, /EC2::TransitGatewayAttachment/, /AWS::EC2::TransitGateway/]
+   ]
+
+# rule blocks
+
+# rule check to ensure prohobitied resources do not exists
+
+# S3 bucket tags 
+
+rule check_tag when %s3_buckets !empty {
+    let bucket_policy_check = Resources.*[ Type == 'AWS::S3::BucketPolicy' ]
+    %bucket_policy_check exists
+    #bucket_policy_check.Properties.PolicyDocument.Statement[*].Condition.ForAnyValue.StringEquals["aws:PrincipalOrgPaths"] in %allowed_org
+    %bucket_policy_check.Properties.PolicyDocument.Statement !empty
+    %s3_buckets.Properties.Tags[*] == {"Key": "Environment", "Value": "3rd Party Production"}
+    <<
+        Violation: Missing Required 3rd Party Production Environment Tag
+        Fix: Please fix tag per Security Project Exception 101 in RITM100200300
+    >>
+}
+
+# S3 bucket policy
+
+rule s3_bucketpolicy_check when %S3_BUCKET_CONDITION_EXISTS !empty {
+  let violations = %S3_BUCKET_CONDITION_EXISTS[
+    some Properties.PolicyDocument.Statement[*] {
+       Condition{
+        'ForAnyValue:StringEquals'.'aws:PrincipalOrgPaths' in ['<OU PATH>']
+       }
+    }
+  ]
+  %violations !empty
+}
+
+#check S3 encryption algorithm & key
+
+let s3_buckets = Resources.*[ Type == 'AWS::S3::Bucket' ]
+
+#check S3 bucket policy exists & encryption algorithm & key
+
+rule s3_encryption_checks when %s3_buckets !empty {
+    # local variable
+    let allowed_s3_key = ["<KEY ARN>"]
+
+    %s3_buckets.Properties.BucketEncryption.ServerSideEncryptionConfiguration[*].ServerSideEncryptionByDefault.KMSMasterKeyID == %allowed_s3_key
+
+
+}
+
+let prohibited_resources_exist = Resources.*[
+   Type in [ /EC2::VPCPeeringConnection/, /EC2::TransitGatewayAttachment/, /AWS::EC2::TransitGateway/]
+   ]
+
+# Named ruleblock
+# if prohoibited resource TYPE matches variable in the CFN template it will 
+# fail this named rule block statement and display message
+
+rule check_all_prohibited_resources_networking {
+    %prohibited_resources_exist empty
+
+}
+

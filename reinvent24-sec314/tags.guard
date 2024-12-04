@@ -1,0 +1,13 @@
+
+# intro simple variables
+
+let s3_buckets = Resources.*[ Type == 'AWS::S3::Bucket' ]
+
+
+rule check_tag when %s3_buckets !empty {
+    %s3_buckets.Properties.Tags[*] == {"Key": "Environment", "Value": "Sandbox"}
+    <<
+        Violation: Missing Required 3rd Party Production Environment Tag
+        Fix: Please fix tag per Security Project Exception 101 in RITM100200300
+    >>
+}

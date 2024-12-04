@@ -1,0 +1,12 @@
+
+New sandbox OU requires security controls outside standard pipeline security
+
+1 Encryption using dedicated KMS key shared for the OU
+
+2 Tagging Strategy
+
+3 Bucketpolicy Statement allowing only the OU 
+
+4 Prohibited resources per corporate standard for sandbox OU not creating unauthorized connections (TGW, VPC Peering, TGW attachment)
+
+

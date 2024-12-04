@@ -1,0 +1,15 @@
+Resources:
+  Tgw-Fail:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      Description: This is a transit gateway
+    
+  VpcPeerConnection-Fail:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      Description: This is a vpc peering
+
+  TgwAttachment-Fail:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      Description: This is a transit gateway attachment

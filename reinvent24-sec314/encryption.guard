@@ -1,0 +1,16 @@
+# intro rule level variables & yq
+
+# dyanmic vs static variables
+
+let s3_buckets = Resources.*[ Type == 'AWS::S3::Bucket' ]
+
+#check S3 bucket policy exists & encryption algorithm & key
+
+rule s3_encryption_checks when %s3_buckets !empty {
+    # local variable
+    let allowed_s3_key = ["<KEY ARN>"]
+
+    %s3_buckets.Properties.BucketEncryption.ServerSideEncryptionConfiguration[*].ServerSideEncryptionByDefault.KMSMasterKeyID == %allowed_s3_key
+
+
+}

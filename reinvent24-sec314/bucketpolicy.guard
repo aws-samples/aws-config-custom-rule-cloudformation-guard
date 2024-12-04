@@ -1,0 +1,17 @@
+
+
+let S3_BUCKET_CONDITION_EXISTS = Resources.*[ Type == 'AWS::S3::BucketPolicy'
+]
+
+# S3 bucket policy - ""some" keyword emphasizes at least one instance present in list document
+
+rule s3_bucketpolicy_check when %S3_BUCKET_CONDITION_EXISTS !empty {
+  let violations = %S3_BUCKET_CONDITION_EXISTS[
+    some Properties.PolicyDocument.Statement[*] {
+       Condition{
+        'ForAnyValue:StringEquals'.'aws:PrincipalOrgPaths' in ['o-lj8c55mjv1/ou-ds8b-bmjfeo1g/*/']
+       }
+    }
+  ]
+  %violations !empty
+}

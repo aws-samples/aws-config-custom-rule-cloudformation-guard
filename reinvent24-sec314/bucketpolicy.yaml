@@ -1,0 +1,20 @@
+Resources:
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowGetObject
+            Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: "arn:aws:s3:::cfguard-example-83urj/*"
+            Condition:
+              ForAnyValue:StringEquals:
+                aws:PrincipalOrgPaths:
+                  # - o-lj8c55mjv1/r-nxuu/*/
+                  # - o-dg88kxu48m/r-jlqc/ou-jlqc-e64koh7p/*
+                  - o-lj8c55mjv1/ou-ds8b-bmjfeo1g/*/
