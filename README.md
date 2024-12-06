@@ -1,5 +1,7 @@
 # AWS Config with CloudFormation Guard
 
+## https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/create-aws-config-custom-rules-by-using-aws-cloudformation-guard-policies.html
+
 AWS Config CloudFormation Guard Custom rules fit as a middle ground between Managed Rules and fully custom Lambda methods. This provides engineers and architects the ability to quickly build rules without needing to know Python, NodeJS, Java required in the other method to deploy custom rules.
 This guide aims to accelerate the adoption of the feature by providing workable templates, code and deployment methods. By using this quick start document, an administrator will be able to leverage AWS Config to build custom compliance rules using Configuration Item attributes.
 
